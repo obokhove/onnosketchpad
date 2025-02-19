@@ -176,7 +176,7 @@ V_expr = fd.replace(V_expr, {V1: 2*Vh12-V0})  #                  FINAL Eqn: 2*Vh
 G = 1-((2*Xh12-X0)/Lx)**twon-((2*Yh12-Y0)/Ly)**twon                   # Definition of squircle at X1, Y1 time level
 X_expr = (1/Lx)*(vvmpc1*( 2*Xh12-2*X0-dt*Uh12 ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Xh12-2*X0-dt*Uh12=0
 U_expr = (1/Lx)*(vvmpc0*( 2*Uh12-2*U0-dt*0.0  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Uh12-2*U0=0
-Y_expr = (1/Lx)*(vvmpc3*( 2*Yh12-2*Y0-dt*Vh12 ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Yh12-2*Y0-dt*Vh12 
+Y_expr = (1/Lx)*(vvmpc3*( 2*Yh12-2*Y0-dt*Vh12 ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Yh12-2*Y0-dt*Vh12=0 
 V_expr = (1/Lx)*(vvmpc2*( 2*Vh12-2*V0-dt*0.0  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Vh12-2*V0=0
 lamb_expr = (1/Lx)*(vvmpc4*( lamb12-G ) )*fd.dx(degree=vpolyp)        # FINAL Eqn: lamb12-G=0 (Noting that we impose lamb12 >=0)
 Fexpr = X_expr+U_expr+Y_expr+V_expr+lamb_expr                         # FINAL weak forms

@@ -173,11 +173,11 @@ Y_expr = fd.replace(Y_expr, {Y1: 2*Yh12-Y0})  # Y1=2*Yh12-Y0 ; FINAL Eqn: 2*Yh12
 V_expr = fd.replace(V_expr, {V1: 2*Vh12-V0})-(1/Lx)*(vvmpc2*dt*((twon/Ly)*((2*Yh12-Y0)/Ly)**(twon-1)*lamb12))*fd.dx(degree=vpolyp) # FINAL Eqn:2*Uh12-2*U0+dt*dG/DY*lamb12=0
 # Alternative eqns weak forms instead so VP not used
 G = 1-((2*Xh12-X0)/Lx)**twon-((2*Yh12-Y0)/Ly)**twon                                                           # Definition of squircle at X1, Y1 time level
-X_expr = (1/Lx)*(vvmpc1*( 2*Xh12-2*X0-dt*Uh12 ))*fd.dx(degree=vpolyp)                                         # FINAL Eqn: 2*Xh12-2*X0-dt*Uh12
-U_expr = (1/Lx)*(vvmpc0*( 2*Uh12-2*U0-dt*(twon/Lx)*((2*Xh12-X0)/Lx)**(twon-1)*lamb12  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Uh12-2*U0-dt*dG/Dx*lamb12= 0
-Y_expr = (1/Lx)*(vvmpc3*( 2*Yh12-2*Y0-dt*Vh12 ))*fd.dx(degree=vpolyp)                                         # FINAL Eqn: 2*Yh12-2*Y0-dt*Vh12 
-V_expr = (1/Lx)*(vvmpc2*( 2*Vh12-2*V0-dt*(twon/Ly)*((2*Yh12-Y0)/Ly)**(twon-1)*lamb12  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Vh12-2*V0-dt*dG/Dx*lamb12= 0
-lamb_expr = (1/Lx)*(vvmpc4*(lamb12*Ffunc))*fd.dx(degree=vpolyp)                                               # FINAL eqn: lamb12*Ffunc=0 (KKT-condotion; we impose lamb12<=0) 
+X_expr = (1/Lx)*(vvmpc1*( 2*Xh12-2*X0-dt*Uh12 ))*fd.dx(degree=vpolyp)                                         # FINAL Eqn: 2*Xh12-2*X0-dt*Uh12=0
+U_expr = (1/Lx)*(vvmpc0*( 2*Uh12-2*U0-dt*(twon/Lx)*((2*Xh12-X0)/Lx)**(twon-1)*lamb12  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Uh12-2*U0-dt*dG/DX*lamb12= 0
+Y_expr = (1/Lx)*(vvmpc3*( 2*Yh12-2*Y0-dt*Vh12 ))*fd.dx(degree=vpolyp)                                         # FINAL Eqn: 2*Yh12-2*Y0-dt*Vh12=0 
+V_expr = (1/Lx)*(vvmpc2*( 2*Vh12-2*V0-dt*(twon/Ly)*((2*Yh12-Y0)/Ly)**(twon-1)*lamb12  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Vh12-2*V0-dt*dG/DY*lamb12= 0
+lamb_expr = (1/Lx)*(vvmpc4*(lamb12*Ffunc))*fd.dx(degree=vpolyp)                                               # FINAL eqn: lamb12*Ffunc=0 (KKT-condition; we impose lamb12<=0) 
 Ffunc_expr = (1/Lx)*(vvmpc5*( Ffunc-G ) )*fd.dx(degree=vpolyp)                                                # FINAL Eqn: Ffunc-G=0 (Noting that we impose Ffunc>=0)
 Fexpr = X_expr+U_expr+Y_expr+V_expr+lamb_expr+Ffunc_expr                                                      # FINAL weak forms
 lbound = fd.Function(mixed_Vmpc).assign(PETSc.NINFINITY)
