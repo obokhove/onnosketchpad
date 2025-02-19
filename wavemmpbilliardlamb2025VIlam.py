@@ -161,25 +161,31 @@ solver_parameters99 = {
     "pc_factor_mat_solver_type": "mumps"
 }
 
+# Constraint imposed at X1,Y1 time level but all solved at Xh12, Yh12, Uh12, Vh12 midpoint levels; lamb12 and Ffunc at X1, Y1 time level. 
 VPnl = (1/Lx)*( Uh12*(X1-X0)-Xh12*(U1-U0)+Vh12*(Y1-Y0)-Yh12*(V1-V0)-0.5*dt*(Uh12**2 + Vh12**2) )*fd.dx(degree=vpolyp)  
 X_expr = fd.derivative(VPnl, Uh12, du=vvmpc1) # du=v_C eqn for X1
-U_expr = fd.derivative(VPnl, Xh12, du=vvmpc0)   # du=v_C eqn for U1
+U_expr = fd.derivative(VPnl, Xh12, du=vvmpc0) # du=v_C eqn for U1
 Y_expr = fd.derivative(VPnl, Vh12, du=vvmpc3) # du=v_C eqn for Y1
-V_expr = fd.derivative(VPnl, Yh12, du=vvmpc2)  # du=v_C eqn for V1
-X_expr = fd.replace(X_expr, {X1: 2*Xh12-X0}) # X1 = 2*Xh12-X0 
-U_expr = fd.replace(U_expr, {U1: 2*Uh12-U0})-(1/Lx)*(vvmpc0*((twon/Lx)*((2*Xh12 - X0)/Lx)**(twon-1)*lamb12))*fd.dx(degree=vpolyp)  #
-Y_expr = fd.replace(Y_expr, {Y1: 2*Yh12-Y0}) # Y1 = 2*Yh12-Y0 
-V_expr = fd.replace(V_expr, {V1: 2*Vh12-V0})-(1/Lx)*(vvmpc2*((twon/Ly)*((2*Yh12 - Y0)/Ly)**(twon-1)*lamb12))*fd.dx(degree=vpolyp) #
-G = 1 - ((2*Xh12 - X0)/Lx)**twon - ((2*Yh12 - Y0)/Ly)**twon
-lamb_expr = (1/Lx)*(vvmpc4*(lamb12*Ffunc))*fd.dx(degree=vpolyp) #
-Ffunc_expr = (1/Lx)*(vvmpc5*( Ffunc-G ) )*fd.dx(degree=vpolyp) # Ffunc=G>0
-Fexpr = X_expr+U_expr+Y_expr+V_expr+lamb_expr+Ffunc_expr # +Gexpr
+V_expr = fd.derivative(VPnl, Yh12, du=vvmpc2) # du=v_C eqn for V1
+X_expr = fd.replace(X_expr, {X1: 2*Xh12-X0})  # X1=2*Xh12-X0 ; FINAL Eqn: 2*Xh12-2*X0-dt*Uh12=0
+U_expr = fd.replace(U_expr, {U1: 2*Uh12-U0})-(1/Lx)*(vvmpc0*dt*((twon/Lx)*((2*Xh12-X0)/Lx)**(twon-1)*lamb12))*fd.dx(degree=vpolyp) # FINAL Eqn:2*Uh12-2*U0+dt*dG/DX*lamb12=0
+Y_expr = fd.replace(Y_expr, {Y1: 2*Yh12-Y0})  # Y1=2*Yh12-Y0 ; FINAL Eqn: 2*Yh12-2*Y0-dt*Vh12=0
+V_expr = fd.replace(V_expr, {V1: 2*Vh12-V0})-(1/Lx)*(vvmpc2*dt*((twon/Ly)*((2*Yh12-Y0)/Ly)**(twon-1)*lamb12))*fd.dx(degree=vpolyp) # FINAL Eqn:2*Uh12-2*U0+dt*dG/DY*lamb12=0
+# Alternative eqns weak forms instead so VP not used
+G = 1-((2*Xh12-X0)/Lx)**twon-((2*Yh12-Y0)/Ly)**twon                                                           # Definition of squircle at X1, Y1 time level
+X_expr = (1/Lx)*(vvmpc1*( 2*Xh12-2*X0-dt*Uh12 ))*fd.dx(degree=vpolyp)                                         # FINAL Eqn: 2*Xh12-2*X0-dt*Uh12
+U_expr = (1/Lx)*(vvmpc0*( 2*Uh12-2*U0-dt*(twon/Lx)*((2*Xh12-X0)/Lx)**(twon-1)*lamb12  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Uh12-2*U0-dt*dG/Dx*lamb12= 0
+Y_expr = (1/Lx)*(vvmpc3*( 2*Yh12-2*Y0-dt*Vh12 ))*fd.dx(degree=vpolyp)                                         # FINAL Eqn: 2*Yh12-2*Y0-dt*Vh12 
+V_expr = (1/Lx)*(vvmpc2*( 2*Vh12-2*V0-dt*(twon/Ly)*((2*Yh12-Y0)/Ly)**(twon-1)*lamb12  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Vh12-2*V0-dt*dG/Dx*lamb12= 0
+lamb_expr = (1/Lx)*(vvmpc4*(lamb12*Ffunc))*fd.dx(degree=vpolyp)                                               # FINAL eqn: lamb12*Ffunc=0 (KKT-condotion; we impose lamb12<=0) 
+Ffunc_expr = (1/Lx)*(vvmpc5*( Ffunc-G ) )*fd.dx(degree=vpolyp)                                                # FINAL Eqn: Ffunc-G=0 (Noting that we impose Ffunc>=0)
+Fexpr = X_expr+U_expr+Y_expr+V_expr+lamb_expr+Ffunc_expr                                                      # FINAL weak forms
 lbound = fd.Function(mixed_Vmpc).assign(PETSc.NINFINITY)
 ubound = fd.Function(mixed_Vmpc).assign(PETSc.INFINITY)
 ubound.sub(5).assign(PETSc.INFINITY)
-lbound.sub(5).assign(0.0)
+lbound.sub(5).assign(0.0) # Noting that we impose Ffunc>=0
 lbound.sub(4).assign(PETSc.NINFINITY)
-ubound.sub(4).assign(0.0)
+ubound.sub(4).assign(0.0) # Noting that we impose lamb12<=0
 solvelamb_nl = fd.NonlinearVariationalSolver(fd.NonlinearVariationalProblem(Fexpr, result_mixedmpc), solver_parameters=solver_parameters19)
 
 ###### OUTPUT #########

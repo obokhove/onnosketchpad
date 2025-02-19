@@ -162,22 +162,28 @@ solver_parameters29 = {
     "pc_fieldsplit_1_snes_type": "vinewtonrsls"  # Apply VI solver only to split 1,3,4
 }
 
+# Constraint imposed at X1,Y1 level but all solved at Xh12, Yh12, Uh12, Vh12 midpoint levels. 
 VPnl = (1/Lx)*( Uh12*(X1-X0)-Xh12*(U1-U0)+Vh12*(Y1-Y0)-Yh12*(V1-V0)-0.5*dt*(Uh12**2 + Vh12**2) )*fd.dx(degree=vpolyp)  
 X_expr = fd.derivative(VPnl, Uh12, du=vvmpc1) # du=v_C eqn for X1
-U_expr = fd.derivative(VPnl, Xh12, du=vvmpc0)   # du=v_C eqn for U1
+U_expr = fd.derivative(VPnl, Xh12, du=vvmpc0) # du=v_C eqn for U1
 Y_expr = fd.derivative(VPnl, Vh12, du=vvmpc3) # du=v_C eqn for Y1
-V_expr = fd.derivative(VPnl, Yh12, du=vvmpc2)  # du=v_C eqn for V1
-X_expr = fd.replace(X_expr, {X1: 2*Xh12-X0}) # X1 = 2*Xh12-X0 
-U_expr = fd.replace(U_expr, {U1: 2*Uh12-U0}) #
-Y_expr = fd.replace(Y_expr, {Y1: 2*Yh12-Y0}) # Y1 = 2*Yh12-Y0 
-V_expr = fd.replace(V_expr, {V1: 2*Vh12-V0}) #
-G = 1 - ((2*Xh12 - X0)/Lx)**twon - ((2*Yh12 - Y0)/Ly)**twon
-lamb_expr = (1/Lx)*(vvmpc4*( lamb12-G ) )*fd.dx(degree=vpolyp) # lamb=G>=0
-Fexpr = X_expr+U_expr+Y_expr+V_expr+lamb_expr # +Gexpr
+V_expr = fd.derivative(VPnl, Yh12, du=vvmpc2) # du=v_C eqn for V1
+X_expr = fd.replace(X_expr, {X1: 2*Xh12-X0})  # X1 = 2*Xh12-X0 ; FINAL Eqn: 2*Xh12-2*X0-dt*Uh12=0
+U_expr = fd.replace(U_expr, {U1: 2*Uh12-U0})  #                  FINAL Eqn: 2*Uh12-2*U0=0
+Y_expr = fd.replace(Y_expr, {Y1: 2*Yh12-Y0})  # Y1 = 2*Yh12-Y0 ; FINAL Eqn: 2*Yh12-2*Y0-dt*Vh1=0
+V_expr = fd.replace(V_expr, {V1: 2*Vh12-V0})  #                  FINAL Eqn: 2*Vh12-2*V0=0
+# Alternative eqns weak forms instead so VP not used
+G = 1-((2*Xh12-X0)/Lx)**twon-((2*Yh12-Y0)/Ly)**twon                   # Definition of squircle at X1, Y1 time level
+X_expr = (1/Lx)*(vvmpc1*( 2*Xh12-2*X0-dt*Uh12 ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Xh12-2*X0-dt*Uh12=0
+U_expr = (1/Lx)*(vvmpc0*( 2*Uh12-2*U0-dt*0.0  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Uh12-2*U0=0
+Y_expr = (1/Lx)*(vvmpc3*( 2*Yh12-2*Y0-dt*Vh12 ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Yh12-2*Y0-dt*Vh12 
+V_expr = (1/Lx)*(vvmpc2*( 2*Vh12-2*V0-dt*0.0  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Vh12-2*V0=0
+lamb_expr = (1/Lx)*(vvmpc4*( lamb12-G ) )*fd.dx(degree=vpolyp)        # FINAL Eqn: lamb12-G=0 (Noting that we impose lamb12 >=0)
+Fexpr = X_expr+U_expr+Y_expr+V_expr+lamb_expr                         # FINAL weak forms
 lbound = fd.Function(mixed_Vmpc).assign(PETSc.NINFINITY)
 ubound = fd.Function(mixed_Vmpc).assign(PETSc.INFINITY)
 ubound.sub(4).assign(PETSc.INFINITY)
-lbound.sub(4).assign(0.0)
+lbound.sub(4).assign(0.0) # Noting that we impose lamb12 >=0 ; lamb12 is not a Lagrange multiplier!
 solvelamb_nl = fd.NonlinearVariationalSolver(fd.NonlinearVariationalProblem(Fexpr, result_mixedmpc), solver_parameters=solver_parameters9)
 
 ###### OUTPUT #########
