@@ -8,4 +8,6 @@ Billards codes:
 
 ....py: Burman solution with soft wall. Works when dt and softness are tuned such that "particle can turn around smoothly with resolved time stepping near the wall"
 
+All plotting done via matplotlib on the fly.
+
 See pdf.
