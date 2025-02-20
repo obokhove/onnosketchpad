@@ -137,6 +137,9 @@ E0 = 0.5*(U0p**2+V0p**2)
 # MMP https://epubs.siam.org/doi/10.1137/1.9781611976311
 vpolyp = 5
 solver_parameters9 = {
+    "snes_converged_reason": None,
+    "snes_monitor": None,
+    "snes_vi_monitor": None,
     "snes_type": "vinewtonrsls",  # Projected Newton method for variational inequality
     "mat_type": "nest",
     "pc_type": "fieldsplit",
@@ -146,6 +149,9 @@ solver_parameters9 = {
 solver_parameters19 = {
     "mat_type": "nest",
     "snes_type": "vinewtonrsls",  # Projected Newton method for variational inequality
+    "snes_converged_reason": None,
+    "snes_monitor": None,
+    "snes_vi_monitor": None,
 }
 solver_parameters99 = {
     "mat_type": "aij",
@@ -199,7 +205,7 @@ YYpm = -Ly*(1-(XXp/Lx)**twon)**(1/twon)
 print('Time Loop starts')
 tic = tijd.time()
 while t <= 1.0*(t_end + dt): #
-    solvelamb_nl.solve()
+    solvelamb_nl.solve(bounds=(lbound, ubound))
     Xh1, Uh12, Yh1, Vh12, lamb12, Ffunc = fd.split(result_mixedmpc)
     X1.interpolate(2.0*Xh12-X0)
     Y1.interpolate(2.0*Yh12-Y0)

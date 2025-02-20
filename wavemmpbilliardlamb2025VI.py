@@ -169,9 +169,9 @@ U_expr = fd.derivative(VPnl, Xh12, du=vvmpc0) # du=v_C eqn for U1
 Y_expr = fd.derivative(VPnl, Vh12, du=vvmpc3) # du=v_C eqn for Y1
 V_expr = fd.derivative(VPnl, Yh12, du=vvmpc2) # du=v_C eqn for V1
 X_expr = fd.replace(X_expr, {X1: 2*Xh12-X0})  # X1 = 2*Xh12-X0 ; FINAL Eqn: 2*Xh12-2*X0-dt*Uh12=0
-U_expr = fd.replace(U_expr, {U1: 2*Uh12-U0})  #                  FINAL Eqn: 2*Uh12-2*U0=0
+U_expr = fd.replace(U_expr, {U1: 2*Uh12-U0})  # U1 = 2*Uh12-U0 ; FINAL Eqn: 2*Uh12-2*U0=0
 Y_expr = fd.replace(Y_expr, {Y1: 2*Yh12-Y0})  # Y1 = 2*Yh12-Y0 ; FINAL Eqn: 2*Yh12-2*Y0-dt*Vh1=0
-V_expr = fd.replace(V_expr, {V1: 2*Vh12-V0})  #                  FINAL Eqn: 2*Vh12-2*V0=0
+V_expr = fd.replace(V_expr, {V1: 2*Vh12-V0})  # V1 = 2*Vh12-V0 ; FINAL Eqn: 2*Vh12-2*V0=0
 # Alternative eqns weak forms instead so VP not used
 G = 1-((2*Xh12-X0)/Lx)**twon-((2*Yh12-Y0)/Ly)**twon                   # Definition of squircle at X1, Y1 time level
 X_expr = (1/Lx)*(vvmpc1*( 2*Xh12-2*X0-dt*Uh12 ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Xh12-2*X0-dt*Uh12=0
@@ -185,6 +185,7 @@ ubound = fd.Function(mixed_Vmpc).assign(PETSc.INFINITY)
 ubound.sub(4).assign(PETSc.INFINITY)
 lbound.sub(4).assign(0.0) # Noting that we impose lamb12 >=0 ; lamb12 is not a Lagrange multiplier!
 solvelamb_nl = fd.NonlinearVariationalSolver(fd.NonlinearVariationalProblem(Fexpr, result_mixedmpc), solver_parameters=solver_parameters9)
+# solvelamb_nl.solve(bounds=(lbound, ubound))
 
 ###### OUTPUT #########
 # outfile_Z = fd.File("resultbuoy/billZ.pvd")
@@ -197,7 +198,7 @@ YYpm = -Ly*(1-(XXp/Lx)**twon)**(1/twon)
 print('Time Loop starts')
 tic = tijd.time()
 while t <= 1.0*(t_end + dt): #
-    solvelamb_nl.solve()
+    solvelamb_nl.solve(bounds=(lbound, ubound))
     Xh1, Uh12, Yh1, Vh12, lamb12 = fd.split(result_mixedmpc)
     X1.interpolate(2.0*Xh12-X0)
     Y1.interpolate(2.0*Yh12-Y0)
