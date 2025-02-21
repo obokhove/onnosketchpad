@@ -99,8 +99,8 @@ ax3.set_xlabel(r'$t$ ',fontsize=size)
 
 #__________________  Define function spaces  __________________#
 nDG = 0
-V_W = fd.FunctionSpace(mesh, 'DG', nDG, vfamily='DG') # needs "aij" in solver parameters
-V_C = fd.FunctionSpace(mesh, 'R', 0, vfamily='R', vdegree=0) # billiard variables X, U, Y and V; needs "nest" in solver parameters
+V_C = fd.FunctionSpace(mesh, 'DG', nDG, vfamily='DG') # needs "aij" in solver parameters
+V_W = fd.FunctionSpace(mesh, 'R', 0, vfamily='R', vdegree=0) # billiard variables X, U, Y and V; needs "nest" in solver parameters
 
 # Variables for modified midpoint test case billiard
 mixed_Vmpc = V_C * V_C * V_C * V_C * V_C * V_C
@@ -146,13 +146,6 @@ solver_parameters9 = {
     "pc_fieldsplit_0_fields": "0,1,2,3",
     "pc_fieldsplit_1_fields": "4",
 }
-solver_parameters19 = {
-    "mat_type": "nest",
-    "snes_type": "vinewtonrsls",  # Projected Newton method for variational inequality
-    "snes_converged_reason": None,
-    "snes_monitor": None,
-    "snes_vi_monitor": None,
-}
 solver_parameters99 = {
     "mat_type": "aij",
     "snes_type": "vinewtonrsls",  # Projected Newton method for variational inequality vinewtonssls
@@ -166,6 +159,17 @@ solver_parameters99 = {
     "pc_type": "lu",
     "pc_factor_mat_solver_type": "mumps"
 }
+solver_parameters19 = {
+    "mat_type": "aij",
+    "snes_type": "vinewtonrsls",  # Projected Newton method for variational inequality
+    "snes_converged_reason": None,
+    "snes_monitor": None,
+    "snes_vi_monitor": None,
+    "snes_rtol": 1.0e-12,
+    "snes_atol": 1.0e-12,
+    "snes_stol": 1.0e-12,
+    "snes_vi_zero_tolerance": 1.0e-12,
+}
 
 # Constraint imposed at X1,Y1 time level but all solved at Xh12, Yh12, Uh12, Vh12 midpoint levels; lamb12 and Ffunc at X1, Y1 time level. 
 VPnl = (1/Lx)*( Uh12*(X1-X0)-Xh12*(U1-U0)+Vh12*(Y1-Y0)-Yh12*(V1-V0)-0.5*dt*(Uh12**2 + Vh12**2) )*fd.dx(degree=vpolyp)  
@@ -178,20 +182,29 @@ U_expr = fd.replace(U_expr, {U1: 2*Uh12-U0})-(1/Lx)*(vvmpc0*dt*((twon/Lx)*((2*Xh
 Y_expr = fd.replace(Y_expr, {Y1: 2*Yh12-Y0})  # Y1=2*Yh12-Y0 ; FINAL Eqn: 2*Yh12-2*Y0-dt*Vh12=0
 V_expr = fd.replace(V_expr, {V1: 2*Vh12-V0})-(1/Lx)*(vvmpc2*dt*((twon/Ly)*((2*Yh12-Y0)/Ly)**(twon-1)*lamb12))*fd.dx(degree=vpolyp) # FINAL Eqn:2*Uh12-2*U0+dt*dG/DY*lamb12=0
 # Alternative eqns weak forms instead so VP not used
-G = 1-((2*Xh12-X0)/Lx)**twon-((2*Yh12-Y0)/Ly)**twon                                                           # Definition of squircle at X1, Y1 time level
+G = 1-((2*Xh12-X0)/Lx)**twon-((2*Yh12-Y0)/Ly)**twon # Definition of squircle at X1, Y1 time level
+nsgn = 1
+ncolin = 1
 X_expr = (1/Lx)*(vvmpc1*( 2*Xh12-2*X0-dt*Uh12 ))*fd.dx(degree=vpolyp)                                         # FINAL Eqn: 2*Xh12-2*X0-dt*Uh12=0
 U_expr = (1/Lx)*(vvmpc0*( 2*Uh12-2*U0-dt*(twon/Lx)*((2*Xh12-X0)/Lx)**(twon-1)*lamb12  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Uh12-2*U0-dt*dG/DX*lamb12= 0
 Y_expr = (1/Lx)*(vvmpc3*( 2*Yh12-2*Y0-dt*Vh12 ))*fd.dx(degree=vpolyp)                                         # FINAL Eqn: 2*Yh12-2*Y0-dt*Vh12=0 
 V_expr = (1/Lx)*(vvmpc2*( 2*Vh12-2*V0-dt*(twon/Ly)*((2*Yh12-Y0)/Ly)**(twon-1)*lamb12  ))*fd.dx(degree=vpolyp) # FINAL Eqn: 2*Vh12-2*V0-dt*dG/DY*lamb12= 0
-lamb_expr = (1/Lx)*(vvmpc4*(lamb12*Ffunc))*fd.dx(degree=vpolyp)                                               # FINAL eqn: lamb12*Ffunc=0 (KKT-condition; we impose lamb12<=0) 
+if ncolin==0:
+    lamb_expr = (1/Lx)*(vvmpc4*(-lamb12*G))*fd.dx(degree=vpolyp)                                              # FINAL eqn: lamb12*Ffunc=0 (KKT-condition; we impose lamb12<=0)
+else:
+    lamb_expr = (1/Lx)*(vvmpc4*( -G ))*fd.dx(degree=vpolyp)                                               # FINAL eqn: (delta lamb12)*Ffunc=0 (KKT-condition; we impose lamb12<=0) 
 Ffunc_expr = (1/Lx)*(vvmpc5*( Ffunc-G ) )*fd.dx(degree=vpolyp)                                                # FINAL Eqn: Ffunc-G=0 (Noting that we impose Ffunc>=0)
 Fexpr = X_expr+U_expr+Y_expr+V_expr+lamb_expr+Ffunc_expr                                                      # FINAL weak forms
 lbound = fd.Function(mixed_Vmpc).assign(PETSc.NINFINITY)
 ubound = fd.Function(mixed_Vmpc).assign(PETSc.INFINITY)
 ubound.sub(5).assign(PETSc.INFINITY)
 lbound.sub(5).assign(0.0) # Noting that we impose Ffunc>=0
-lbound.sub(4).assign(PETSc.NINFINITY)
-ubound.sub(4).assign(0.0) # Noting that we impose lamb12<=0
+if nsgn==1:
+    lbound.sub(4).assign(PETSc.NINFINITY)
+    ubound.sub(4).assign(0.0) # Noting that we impose lamb12<=0
+else:
+    ubound.sub(4).assign(PETSc.INFINITY)
+    lbound.sub(4).assign(0.0) # Noting that we impose lamb12<=0
 solvelamb_nl = fd.NonlinearVariationalSolver(fd.NonlinearVariationalProblem(Fexpr, result_mixedmpc), solver_parameters=solver_parameters19)
 
 ###### OUTPUT #########
