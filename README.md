@@ -1,5 +1,7 @@
 # Onno's sketchpad
 
+13-07: Typos corrected in pdf and updated code (...copy.py)
+
 09-07-2025 update for Colin:
 * two energy-conserving bouncing ball codes; one with Z fails since Z<0 in iterate I suspect; but I did not catch out Z^n+1=Z^n; but one with theta as in Z=exp(theta) seems to work. Terribly slow!
 Note that in the graph above one can see in the middle eenrgy panel where Z~0 where L'Hopital is used; so some refinement seems needed.
