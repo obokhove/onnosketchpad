@@ -2,6 +2,7 @@
 
 25-08-2025: Run AVF-code for Variational Boussinesq Model:
 python3 wavebuoyhydynVBMGN2DH.py
+Reproduces wavebuoyGNVBMA025c4000T1Ts2.png
 
 Ealier Benney-Luke BLE-AVF model: wavebuoyhydyn.py
 
