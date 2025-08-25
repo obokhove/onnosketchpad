@@ -15,3 +15,5 @@ Otherwise it drops to ~10^(-9).
 
 Question: better solver settings, convergence analysis for dt in terms of c, etc?
 Now dt set with CFL and simple SWE phase speed as estimate.
+
+First tests show that when a crash occurs with the buoy motion and wave forcing it will also occur without buoy motyion but with the same wavemaker forcing. So the wave model may need taming.
