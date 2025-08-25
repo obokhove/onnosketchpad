@@ -1,5 +1,8 @@
 # Onno's sketchpad
 
+25-08-2025: see wave energy 2025 folder.
+ 
+
 13-07: Typos corrected in pdf and updated code (...copy.py)
 
 09-07-2025 update for Colin:
