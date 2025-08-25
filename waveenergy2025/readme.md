@@ -5,7 +5,9 @@ python3 wavebuoyhydynVBMGN2DH.py
 
 Ealier Benney-Luke BLE-AVF model: wavebuoyhydyn.py
 
-Change Amp and/or c and/or tstop to get convergence or not.
+Change Amp, sigma and/or c and/or tstop to get convergence or not.
+Shorten tstop, lengthen sigma, lower c for convergence.
+
 Note that when betaa=0.0 one has Green-Naghdi; for betaa=1 one has 
 One estimate is dt ~ 1/sqrt{c} from bouncing ball case.
 When t>tstop there is no forcing and AVF-energy conservation seen up to 10^(-14) for tight tolerances.
