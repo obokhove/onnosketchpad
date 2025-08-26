@@ -23,7 +23,12 @@ from sympy.abc import k
 import matplotlib
 nmpi=0
 if nmpi==0:
-    matplotlib.use('MacOSX')
+    import platform
+    if platform.system() == "Darwin":   # macOS
+        matplotlib.use("MacOSX")
+    else:  # Linux / Docker
+        matplotlib.use("Agg")  # non-interactive, safe everywhere matplotlib.use('MacOSX')
+    
 import matplotlib.pyplot as plt
 import os
 import os.path
