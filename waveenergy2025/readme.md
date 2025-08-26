@@ -22,8 +22,7 @@ M2-Macbook via Docker 25-08:
 - E0, E1, |E1-E0|/E0: 0.0005181748452683975 0.0005181748452683967 1.6738785101371308e-15
 - Elapsed time (min): 39.863962813218436
 
-
-Ealier Benney-Luke BLE-AVF model: wavebuoyhydyn.py
+Earlier Benney-Luke BLE-AVF model: wavebuoyhydyn.py
 
 Change Amp, sigma and/or c and/or tstop to get convergence or not.
 Shorten tstop, lengthen sigma, lower c for convergence.
