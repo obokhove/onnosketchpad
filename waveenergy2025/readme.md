@@ -4,14 +4,16 @@
 python3 wavebuoyhydynVBMGN2DH.py
 Reproduces wavebuoyGNVBMA025c4000T1Ts2.png
 
-M2 native 25-08:
+Macbook 2020 via Docker 26-08: TBA
+
+M2-Macbook native 25-08:
 Step 3680, final SNES residual norm 6.5634e-16
 - Converged reason: 4
 - Plotting: ii, t 3680 3.991665065641824
 - E0, E1, |E1-E0|/E0: 0.0005181748452688466 0.0005181748452688488 4.1846962753392e-15
 - Elapsed time (min): 23.418518352508546
 
-M2 Docker 25-08:
+M2-Macbook via Docker 25-08:
 - Step 3680, final SNES residual norm 1.6366e-15
 - Converged reason: 4
 - Plotting: ii, t 3680 3.991665065641824
