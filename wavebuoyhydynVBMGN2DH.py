@@ -1,5 +1,5 @@
 #
-# 2D horizontal BLE water-wave equations in x-periodic channel based on implemenation with VP
+# 2D horizontal Variational Boussinesqg or Green-Naghdi water-wave equations in x-periodic channel based on implemenation with VP
 # =================================================
 # Onno Bokhove 05-02-2025 
 #
@@ -23,7 +23,12 @@ from sympy.abc import k
 import matplotlib
 nmpi=0
 if nmpi==0:
-    matplotlib.use('MacOSX')
+    import platform
+    if platform.system() == "Darwin":   # macOS
+        matplotlib.use("MacOSX")
+    else:  # Linux / Docker
+        matplotlib.use("Agg")  # non-interactive, safe everywhere matplotlib.use('MacOSX')
+    
 import matplotlib.pyplot as plt
 import os
 import os.path
@@ -234,9 +239,9 @@ F_hyexprnl = phi_hyexpr+h_hyexpr+q_hyexpr+Z_hyexpr+W_hyexpr
 # VP or weak forms dynamic case: first test is rest state stays rest state; next test add forcing
 Amp = 0.025 #  0.025
 L1 = 0.2
-Twm = 0.5
+Twm = 1.0
 sigma = 2.0*np.pi/Twm
-twmstop = 3.0*Twm
+twmstop = 2.0*Twm
 gravwmtime = fd.Constant(0.0)
 def gravwavemakertime(t,sigma,twmstop):
     if t<twmstop:
@@ -369,6 +374,7 @@ def monitor(snes, its, fnorm):
 snes = wavebuoy_nl.snes
 # Set tolerances directly on the SNES object
 snes.setTolerances(rtol=1e-16, atol=1e-16)
+# snes.setType("vinewtonrsls")
 
 # lines_parameters = {'ksp_type': 'gmres', 'pc_type': 'python', 'pc_python_type': 'firedrake.ASMStarPC', 'star_construct_dim': 2,'star_sub_sub_pc_type': 'lu', 'sub_sub_pc_factor_mat_ordering_type': 'rcm'}
 
