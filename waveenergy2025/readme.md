@@ -1,5 +1,10 @@
 # Wave energy device summer 2025
 
+27-08:
+- ...han.py can make animations.
+- see sample .gif file
+- to do: better solvers, explorations and wave-breaking smoothing.
+
 25-08-2025: Run AVF-code for Variational Boussinesq Model:
 python3 wavebuoyhydynVBMGN2DH.py
 Reproduces wavebuoyGNVBMA025c4000T1Ts2.png
