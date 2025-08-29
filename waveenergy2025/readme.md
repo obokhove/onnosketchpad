@@ -1,5 +1,12 @@
 # Wave energy device summer 2025
 
+29-08: gif at CG3 made with python3 wavebuoyhydynVBMGN2DHancopy2808.py native venv
+Gif-maker CG3 Elapsed time (min): 318.23679311672845
+Static CG3: Elapsed time (min): 380.833709247907
+Gif-maker CG2: Elapsed time (min): 88.67235361735025
+CG1:about 23min.
+
+
 27-08:
 - ...han.py can make animations.
 - see sample .gif file
