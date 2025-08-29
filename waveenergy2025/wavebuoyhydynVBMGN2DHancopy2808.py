@@ -21,8 +21,8 @@ import sympy as sp
 from sympy import summation
 from sympy.abc import k
 import matplotlib
-nmpi=1
-nserial=0
+nmpi=0
+nserial=1
 if nmpi==0:
     import platform
     if platform.system() == "Darwin":   # macOS
@@ -49,22 +49,19 @@ else:
 from petsc4py import PETSc
 import matplotlib.animation as animation
 from PIL import Image # THIS LINE WAS ADDED
-from mpi4py import MPI
-import sys
 os.environ["OMP_NUM_THREADS"] = "1"
-
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-comm.Barrier() # Synchronize before starting assignments
 
 # op2.init()
 # parameters["coffee"]["O2"] = False
+
 # parameters in SI units REMIS error of polynomials
+
 # water domain and discretisation parameters
 # nic = "linearw" # choice initial condition
 nic = "rest" # rest state start
 nvpcase = "AVF" # AVF= VP time discretisation energy-conserving approach
-nCG = 2    # order of CG. Choices: ["1","2","4"] 
+
+nCG = 3     # order of CG. Choices: ["1","2","4"] 
 multiple=1    # a resolution factor in spatial domain.  1 is basic. 2 is dense. 
 multiple2=1   # a resolution factor in temporal domain. 1 is basic. 2 is dense.
 nprintout = 0 # print out on screen or in file; 1: on screen: 0: PETSC version
@@ -146,7 +143,7 @@ nxx = nx
 nyy = ny
 Lr = (Ly-Lc) # 0.2*Ly
 Area = Lx*Ly-0.5*Lx*Lr
-PETSc.Sys.Print('Lx etc. ... tanalp',Lx,Ly,Lr,Area,tanalp)
+print('Lx etc. ... tanalp',Lx,Ly,Lr,Area,tanalp)
 
 if nserial==1:
     mesh2d = get_mesh(Lxx, Lyy, nxx+1, nyy, Lr)[0]
@@ -161,6 +158,8 @@ else:
     # mesh2d = fd.Mesh("custom_mesh.h5")
     mesh = mesh2d
 # x, y, z = fd.SpatialCoordinate(mesh)
+
+print('Hallo0')
 
 nmeshplot=0
 if nmeshplot==1:
@@ -189,10 +188,14 @@ if nmeshplot==1:
 x1, y = fd.SpatialCoordinate(mesh2d)
 x = mesh2d.coordinates
 
+print('Hallo')
+
+top_id = 'top'
 seps = 0.0 #  -10**(-10)
 yvals = np.linspace(0.0+seps, Ly-seps, ny)
 xslice = 0.5*Lx
 # 
+
 t = 0
 fac = 1.0 # Used to split h=H0+eta in such in way that we can switch to solving h (fac=0.0) or eta (fac=1.0)
 if nic=="rest":    
@@ -205,7 +208,7 @@ if nic=="rest":
     CFL1 = 0.25*0.125
     CFL = 0.125
     dt = CFL*dt3
-    PETSc.Sys.Print('time steps',dt,CFL1*dtt,CFL1*dt3,dt3)
+    print('time steps',dt,CFL1*dtt,CFL1*dt3,dt3)
     nplot = 20  # 10
     tijde = []
     while (t <= t_end+1*dt):
@@ -271,6 +274,7 @@ def gravwavemakertime(t,sigma,twmstop):
         return 0.0
 gravwmtime.assign(gravwavemakertime(t,sigma,twmstop))
 gravwm = Amp*fd.conditional(x[1]<L1,(x[1]-L1)/L1*gravwmtime,0.0)
+mu = H0**2 # Needs checking; checked!
 # 
 deltacons = Zn-hn-Z0+h0
 nwave = 1
@@ -285,7 +289,7 @@ if nsa==0:
     delHamdelphi = ( fd.inner( fd.grad(vvmp0),(1/6)*(2*h0*fd.grad(phi0)+2*hn*fd.grad(phin)+h0*fd.grad(phin)+hn*fd.grad(phi0)) )  )*fd.dx(degree=vpolyp)
     delHamdelh = ( vvmp1*(1/6)*( fd.inner(fd.grad(phi0),fd.grad(phi0))+fd.inner(fd.grad(phin),fd.grad(phin))+fd.inner(fd.grad(phi0),fd.grad(phin))  ) \
                +vvmp1*(grav*(0.5*(hn+h0)-H0))  )*fd.dx(degree=vpolyp)
-    PETSc.Sys.Print(' BEWARE: Shallow-water test. Do not use this option!')
+    print(' BEWARE: Shallow-water test. Do not use this option!')
 else:
     ah01=1.0
     aq01=1.0
@@ -325,9 +329,9 @@ if nsa == 1:
     h_expr   = (  vvmp1*(phin-phi0)/dt +\
                   vvmp1*(1/6)*( fd.inner(fd.grad(phi0),fd.grad(phi0))+fd.inner(fd.grad(phin),fd.grad(phin))+fd.inner(fd.grad(phi0),fd.grad(phin))  )+ \
                   vvmp1*(grav*(0.5*(hn+h0)-H0)+ ccinv*Forcingterm + grav*gravwm )  )*fd.dx(degree=vpolyp)
-    PETSc.Sys.Print(' BEWARE: Note shallow-water limit test. Do not use this option!')
+    print(' BEWARE: Note shallow-water limit test. Do not use this option!')
 else:
-    PETSc.Sys.Print('Hallo nsa',nsa)
+    print('Hallo nsa',nsa)
     phi_expr = ( vvmp0*(hn-h0)/dt )*fd.dx(degree=vpolyp) - delHamdelphi
     h_expr   = (  vvmp1*(phin-phi0)/dt+\
                   vvmp1*( ccinv*Forcingterm + grav*gravwm ) )*fd.dx(degree=vpolyp) + delHamdelh
@@ -338,10 +342,10 @@ if nsa==3:
         q_expr = delHamdelpsi
     else:
         q_expr   = ( vvmp2*qn )*fd.dx(degree=vpolyp)    # nil/rest solution
-        PETSc.Sys.Print(' BEWARE: Note no psi-dynamics test. Do not use this option!')
+        print(' BEWARE: Note no psi-dynamics test. Do not use this option!')
 else:
     q_expr   = ( vvmp2*qn )*fd.dx(degree=vpolyp)   # nil/rest solution
-    PETSc.Sys.Print(' BEWARE:  Note no psi-dynamics test. Do not use this option!')
+    print(' BEWARE:  Note no psi-dynamics test. Do not use this option!')
 
 if nwave==1:
     Z_expr   = ( vvmp3*( Area*meff*(Wn-W0)/dt+Area*meff*grav-ccinv*Forcingterm ))*fd.dx(degree=vpolyp)
@@ -397,38 +401,33 @@ snes.setTolerances(rtol=1e-16, atol=1e-16)
 # lines_parameters = {'ksp_type': 'gmres', 'pc_type': 'python', 'pc_python_type': 'firedrake.ASMStarPC', 'star_construct_dim': 2,'star_sub_sub_pc_type': 'lu', 'sub_sub_pc_factor_mat_ordering_type': 'rcm'}
 
 ###### OUTPUT FILES and initial PLOTTING ##########
-save_path =  "figs/"
+save_path =  "data/"
 if not os.path.exists(save_path):
     os.makedirs(save_path) 
-outfile_phi = VTKFile(os.path.join(save_path, "phi.pvd"))
-outfile_psi = VTKFile(os.path.join(save_path, "psi.pvd"))
-outfile_h = VTKFile(os.path.join(save_path, "h.pvd"))
-energy_file =  os.path.join(save_path, 'energy.csv')
-
-
-#outfile_hn = fd.File(save_path+"hn.pvd") #outfile_qn = fd.File(save_path+"qn.pvd") fileE = save_path+"potflow3dperenergy.txt"
+#outfile_phin = fd.File(save_path+"phin.pvd")
+outfile_phin = VTKFile(os.path.join(save_path, "phin.pvd"))
+#outfile_hn = fd.File(save_path+"hn.pvd") #outfile_qn = fd.File(save_path+"qn.pvd")
+fileE = save_path+"potflow3dperenergy.txt"
 # outputE = open(fileE,"w") # outputEtamax = open(filEtaMax,"w") # outfile_height.write(h_old, time=t)
 # outfile_psi.write(psi_f, time=t) # outfile_varphi.write(varphi, time=t)
 
 # Solve hydrostatic rest state:
 cc_values = [100.0, 500.0, 1000.0, 2000.0, 4000.0] # , 4000.0, 5000.0, 7000.0] # , 7000.0, 10000.0]
 # --- Continuation Loop Execution ---
-
-PETSc.Sys.Print("Starting continuation loop...")
+print("Starting continuation loop...")
 for cc_val in cc_values:
     # Update the Firedrake Constant with the new cc value
     cc.assign(cc_val)
-    PETSc.Sys.Print(f"Solving for cc = {cc_val}...")
+    print(f"Solving for cc = {cc_val}...")
     solver_reason = wavebuoy_hydrotstaticnl.solve()
     phin, hn, qn, Zn, Wn = fd.split(result_mixedmp)
-    PETSc.Sys.Print(f"Solver for cc={cc_val} converged reason: {solver_reason}")
+    print(f"Solver for cc={cc_val} converged reason: {solver_reason}")
 
-        
 if nserial==1:
     # --- User choice for plotting mode ---
-    PETSc.Sys.Print('Choose plotting mode:')
-    PETSc.Sys.Print('1. Static (shows final plot only)')
-    PETSc.Sys.Print('2. Animated (shows plots in real-time)')
+    print('Choose plotting mode:')
+    print('1. Static (shows final plot only)')
+    print('2. Animated (shows plots in real-time)')
     plot_mode_choice = input('Enter 1 or 2: ')
     animate_mode = (plot_mode_choice == '2')
     animation_data = []  # This will store the actual data, not canvas regions
@@ -439,7 +438,7 @@ Lw = 0.1*Ly
 yvLw = np.linspace(Ly-Lw+10**(-10), Ly-10**(-10), ny)
 
 def update_plotstatic(fig, axes, fig3, ax1_fig3, t, Z00, W00, h1vals, phi1vals, q1vals, yvals, yvLw, Lw, Ly, Z1, Keel, tanalp):
-    PETSc.Sys.Print('Hallo static')
+    print('Hallo static')
     #ax1 = axes[0, 0]
     #ax2 = axes[0, 1]
     #ax3 = axes[1, 0]
@@ -489,7 +488,7 @@ def update_plots(fig, axes, fig3, ax1_fig3, t, Z00, W00, h1vals, phi1vals, q1val
     #ax2 = axes[0, 1]
     #ax3 = axes[1, 0]
     #ax4 = axes[1, 1]
-    PETSc.Sys.Print('Hallo nonstatic')
+    print('Hallo nonstatic')
     if save_for_animation: # Save data for animation if requested
         hbuoy0 = np.heaviside(yvLw - Ly + Lw, 0.5) * (Z00 - Keel - tanalp * (yvLw - Ly))
         frame_data = {
@@ -570,7 +569,7 @@ ax4_twin = ax4.twinx()
 # --- New figure for ax1 only, full-width ---
 # plt.figure(3)
 fig3, ax1_fig3 = plt.subplots(figsize=(10, 5))
-    
+
 Z1.interpolate(Zn)
 W1.interpolate(Wn)
 h1.interpolate(hn)
@@ -578,52 +577,30 @@ phi1.interpolate(phin)
 q1.interpolate(qn)
 Z00 = np.array(Z1.vector())
 W00 = np.array(W1.vector())
-
+phi1vals = np.array([phi1.at(xslice,y) for y in yvals])
+h1vals = np.array([h1.at(xslice,y) for y in yvals])
+q1vals = np.array([q1.at(xslice,y) for y in yvals])
 
 # Initial plot update
 if animate_mode and nmpi==0:
-    phi1vals = np.array([phi1.at(xslice,y) for y in yvals])
-    h1vals = np.array([h1.at(xslice,y) for y in yvals])
-    q1vals = np.array([q1.at(xslice,y) for y in yvals])
-    PETSc.Sys.Print('Hallo nonstatic')
+    print('Hallo nonstatic')
     update_plots(fig, axes, fig3, ax1_fig3, t, Z00, W00, h1vals, phi1vals, q1vals, yvals, yvLw, Lw, Ly, Z1, Keel, tanalp,save_for_animation=True)
-elif nmpi==0:
-    phi1vals = np.array([phi1.at(xslice,y) for y in yvals])
-    h1vals = np.array([h1.at(xslice,y) for y in yvals])
-    q1vals = np.array([q1.at(xslice,y) for y in yvals])
-    if fd.COMM_WORLD.rank == 0:
-        if nmpi==0:
-            update_plotstatic(fig, axes, fig3, ax1_fig3, t, Z00, W00, h1vals, phi1vals, q1vals, yvals, yvLw, Lw, Ly, Z1, Keel, tanalp)
-            PETSc.Sys.Print('Hallo static after 1st plot')
-
-# Initial condition is hydrostatic rest state just calculated
-ninpp = 1
-if ninpp==0:
-    phi0.assign(phi1)
-    h0.assign(h1)
-    q0.assign(q1)
-    W0.assign(W1)
-    Z0.assign(Z1)
-elif ninpp==1:
-    phi0.interpolate(phi1)
-    h0.interpolate(h1)
-    q0.interpolate(q1)
-    W0.interpolate(W1)
-    Z0.interpolate(Z1)
-    PETSc.Sys.Print(f'After interpolates on rank {rank}')
 else:
-    phi0.interpolate(phi1)
-    h0.interpolate(h1)
-    q0.interpolate(q1)
-    W0.interpolate(W1)
-    Z0.interpolate(Z1)
+    print('Hallo static')
+    if nmpi==0:
+        update_plotstatic(fig, axes, fig3, ax1_fig3, t, Z00, W00, h1vals, phi1vals, q1vals, yvals, yvLw, Lw, Ly, Z1, Keel, tanalp)
+    
+# Initial condition is hydrostatic rest state just calculated
+phi0.assign(phi1)
+h0.assign(h1)
+q0.assign(q1)
+W0.assign(W1)
+Z0.assign(Z1)
 
 E0 = fd.assemble( ( 0.5*hn*fd.inner(fd.grad(phin)+ah01*hn*qn*fd.grad(hn)+aq01*(1/3)*hn**2*fd.grad(qn),fd.grad(phin)+ah01*hn*qn*fd.grad(hn)+aq01*(1/3)*hn**2*fd.grad(qn))+0.5*grav*fd.inner(hn-H0,hn-H0) \
                     +aq02*(1/6)*hn**3*qn**2+(betaa/90)*hn**5*fd.inner(fd.grad(qn),fd.grad(qn))+(nwave/cc**2)*fd.exp(-cc*(Zn-hn-Keel-tanalp*(x[1]-Ly))) + nwave*Area*meff*(0.5*Wn**2+grav*Zn) )*fd.dx(degree=vpolyp) )
 gravwmtime.assign(gravwavemakertime(t,sigma,twmstop))
-
 tic = tijd.time()
-PETSc.Sys.Print('Time loop starts')
 nstop = 0
 # Time loop starts: Needs to and does start with Zn,Wn,phim,hn,qn of hydrostatic solve as input
 while t <= 1.0*(t_end + dt):
@@ -643,61 +620,45 @@ while t <= 1.0*(t_end + dt):
         fnorm = snes.getFunctionNorm()
         PETSc.Sys.Print(f"Step {ii}, final SNES residual norm {fnorm:.4e}")
         PETSc.Sys.Print(" Converged reason:", snes.getConvergedReason())    
-        PETSc.Sys.Print('Plotting: ii, t',ii,t)
+        print('Plotting: ii, t',ii,t)
         Z00 = np.array(Z1.vector())
         W00 = np.array(W1.vector())
-            
+        phi1vals = np.array([phi1.at(xslice,y) for y in yvals])
+        h1vals = np.array([h1.at(xslice,y) for y in yvals])
+        q1vals = np.array([q1.at(xslice,y) for y in yvals])
         # SWE expression: E1 = fd.assemble( ( 0.5*hn*fd.inner(fd.grad(phin),fd.grad(phin))+0.5*grav*fd.inner(hn-H0,hn-H0) \
         #                    +(nwave/cc**2)*fd.exp(-cc*(Zn-hn-Keel-tanalp*(x[1]-Ly))) + nwave*Area*meff*(0.5*Wn**2+grav*Zn) )*fd.dx(degree=vpolyp) )
         E1 = fd.assemble( ( 0.5*hn*fd.inner(fd.grad(phin)+ah01*hn*qn*fd.grad(hn)+aq01*(1/3)*hn**2*fd.grad(qn),fd.grad(phin)+ah01*hn*qn*fd.grad(hn)+aq01*(1/3)*hn**2*fd.grad(qn))+0.5*grav*fd.inner(hn-H0,hn-H0) \
                             +aq02*(1/6)*hn**3*qn**2+(betaa/90)*hn**5*fd.inner(fd.grad(qn),fd.grad(qn))+(nwave/cc**2)*fd.exp(-cc*(Zn-hn-Keel-tanalp*(x[1]-Ly))) + nwave*Area*meff*(0.5*Wn**2+grav*Zn) )*fd.dx(degree=vpolyp) )
-        PETSc.Sys.Print('E0, E1, |E1-E0|/E0:',E0, E1, np.abs(E1-E0)/E0)
+        print('E0, E1, |E1-E0|/E0:',E0, E1, np.abs(E1-E0)/E0)
         if t>twmstop and nstop==0:
             E0 = E1
             nstop = 1
-            PETSc.Sys.Print('time, Twm, E0, E1',t,twmstop,E0,E1)
+            print('time, Twm, E0, E1',t,twmstop,E0,E1)
         
         # Update plots - save data if we want animations
         if animate_mode and nmpi==0:
-            h1vals = np.array([h1.at(xslice,y) for y in yvals])
-            q1vals = np.array([q1.at(xslice,y) for y in yvals])
             update_plots(fig, axes, fig3, ax1_fig3, t, Z00, W00, h1vals, phi1vals, q1vals, yvals, yvLw, Lw, Ly, Z1, Keel, tanalp, save_for_animation=True)
-        elif nmpi==0:
-            phi1vals = np.array([phi1.at(xslice,y) for y in yvals])
-            h1vals = np.array([h1.at(xslice,y) for y in yvals])
-            q1vals = np.array([q1.at(xslice,y) for y in yvals])
+        else:
             update_plotstatic(fig, axes, fig3, ax1_fig3, t, Z00, W00, h1vals, phi1vals, q1vals, yvals, yvLw, Lw, Ly, Z1, Keel, tanalp)
-            plt.draw()
-            plt.pause(0.00001) 
+            if nmpi==0:  # Only show live plots in static mode
+                plt.draw()
+                plt.pause(0.00001) 
             
-        outfile_h.write(h1)
-        outfile_phi.write(phi1)
-        outfile_psi.write(q1)
-        
-    # Copy new state to old state for next time step
-    if ninpp==0:
-        phi0.assign(phi1)
-        h0.assign(h1)
-        q0.assign(q1)
-        W0.assign(W1)
-        Z0.assign(Z1)
-    elif ninpp==1:
-        phi0.interpolate(phi1)
-        h0.interpolate(h1)
-        q0.interpolate(q1)
-        W0.interpolate(W1)
-        Z0.interpolate(Z1)
-    else:
-        phi0.interpolate(phi1)
-        h0.interpolate(h1)
-        q0.interpolate(q1)
-        W0.interpolate(W1)
-        Z0.interpolate(Z1)
 
+    # Copy new state to old state for next time step
+    phi0.assign(phi1)
+    h0.assign(h1)
+    q0.assign(q1)
+    W0.assign(W1)
+    Z0.assign(Z1)   
 # End while time loop
 toc = tijd.time() - tic
 #
-PETSc.Sys.Print('Elapsed time (min):', toc/60)
+if nprintout==1:
+    print('Elapsed time (min):', toc/60)
+else:
+    PETSc.Sys.Print('Elapsed time (min):', toc/60)
     
 #outfile_phin.close()
 #outfile_hn.close()
@@ -709,10 +670,10 @@ PETSc.Sys.Print('Elapsed time (min):', toc/60)
 def create_animations():
     """Create animations from collected data"""
     if not animation_data:
-        PETSc.Sys.Print("No animation data collected!")
+        print("No animation data collected!")
         return
         
-    PETSc.Sys.Print(f"Creating animations from {len(animation_data)} frames...")
+    print(f"Creating animations from {len(animation_data)} frames...")
     
     # Create new figures for animation
     fig_anim, axes_anim = plt.subplots(2, 2, figsize=(12, 8))
@@ -732,23 +693,34 @@ def create_animations():
         ax1, ax2, ax3, ax4 = axes_anim.flat
         ax2_twin = ax2.twinx()
         ax4_twin = ax4.twinx()
+        
         # Clear axes
         ax1.cla()
         ax2.cla() 
         ax3.cla()
         ax4.cla()
+        #ax2_twin.cla() # <<< --- LINE CHANGED --- >>>
+        #ax4_twin.cla() # <<< --- LINE CHANGED --- >>>
+        
         # Clear twin axes from the previous frame. This is the fix.
         # Check if ax2 has children and clear them. This avoids the "jumping and writing over".
         # It gets the twin axes via the main axis's children list.
         if hasattr(ax2, 'right_ax'): # <<< --- CHANGED LINE --- >>>
-            ax2.right_ax.cla() # <<< --- CHANGED LINE --- >>>       
+            ax2.right_ax.cla() # <<< --- CHANGED LINE --- >>>
+            
         if hasattr(ax4, 'right_ax'): # <<< --- CHANGED LINE --- >>>
             ax4.right_ax.cla() # <<< --- CHANGED LINE --- >>>
+            
+        
+        # Create twin axes for ax2 and ax4
+        #ax2_twin = ax2.twinx()
+        #ax4_twin = ax4.twinx()
         
         # Plot data
         ax1.plot(frame['yvals'], frame['h1vals'], '-', label='$h$')
         ax1.plot(frame['yvals'], 0.0 * frame['h1vals'], '-r', label='Water level')
         ax1.plot(frame['yvLw'], frame['hbuoy0'], '--r', label='Buoy')
+        
         ax2_twin.plot(frame['yvals'], frame['phi1vals'], '-', color='tab:blue', label=r'$\phi$')
         ax3.plot(frame['yvals'], frame['q1vals'], '-', label=r'$\psi$')
         
@@ -770,6 +742,7 @@ def create_animations():
         ax4.set_xlabel(r'$t$', fontsize=size)
         ax4.set_ylabel(r'$Z(t)$', color='b', fontsize=size)
         ax4_twin.set_ylabel(r'$W(t)$', color='r', fontsize=size)
+        
         ax1.set_xlim(xmin=0.8 * Ly, xmax=Ly)
         ax1.set_ylim(ymin=0, ymax=1.5 * H0)
         ax4.set_xlim(0, max(all_times))
@@ -799,7 +772,8 @@ def create_animations():
         ax1_fig3_anim.set_title(f'$h$ and buoy, t={frame["t"]:.3f}', fontsize=tsize2)
         ax1_fig3_anim.set_xlim(xmin=0.0, xmax=Ly)
         ax1_fig3_anim.set_ylim(ymin=0, ymax=1.5 * H0)
-        ax1_fig3_anim.legend(loc='upper right', fontsize=size)  
+        ax1_fig3_anim.legend(loc='upper right', fontsize=size)
+        
         return []
     
     # Create animations
@@ -813,22 +787,27 @@ def create_animations():
     anim1.save("figs/wavebuoyGNVBM_animated_panel.gif", writer='pillow', fps=5)
     anim2.save("figs/wavebuoyGNVBM_animated_h_only.gif", writer='pillow', fps=5)
     
-    PETSc.Sys.Print("Animations saved successfully!")
+    print("Animations saved successfully!")
     
     # Keep references to prevent garbage collection
     return anim1, anim2
 
 # --- Final save and show ---
-if animate_mode and animation_data and nmpi==0:
+if animate_mode and animation_data:
     animations = create_animations()
 else:
+    # Static mode - create final plots
+    update_plots(fig, axes, fig3, ax1_fig3, t, Z00, W00, h1vals, phi1vals, q1vals, 
+                yvals, yvLw, Lw, Ly, Z1, Keel, tanalp)
+    os.makedirs("figs", exist_ok=True)
+    fig.savefig("figs/wavebuoyGNVBM_static_panel.png")
+    fig3.savefig("figs/wavebuoyGNVBM_static_h_only.png")
     if nmpi==0:
-        update_plots(fig, axes, fig3, ax1_fig3, t, Z00, W00, h1vals, phi1vals, q1vals, 
-                     yvals, yvLw, Lw, Ly, Z1, Keel, tanalp)
-        os.makedirs("figs", exist_ok=True)
-        fig.savefig("figs/wavebuoyGNVBM_static_panel.png")
-        fig3.savefig("figs/wavebuoyGNVBM_static_h_only.png")
         plt.show()
-        PETSc.Sys.Print('Hello shown.')
+        print('Hello shown.')
 
-PETSc.Sys.Print('*************** PROGRAM ENDS ******************')
+
+if nprintout==1:
+    print('*************** PROGRAM ENDS ******************')
+else:
+    PETSc.Sys.Print('*************** PROGRAM ENDS ******************')
