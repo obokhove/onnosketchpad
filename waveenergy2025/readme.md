@@ -1,6 +1,10 @@
 # Wave energy device summer 2025
 
 29-08: gif at CG3 made with python3 wavebuoyhydynVBMGN2DHancopy2808.py native venv
+gif Plotting: ii, t 14740 3.997088523610295
+E0, E1, |E1-E0|/E0: 0.0005186092432332517 0.0005186092432335049 4.881540593010651e-13
+Hallo nonstatic
+Elapsed time (min): 918.6930528799693
 Gif-maker CG3 Elapsed time (min): 318.23679311672845
 Static CG3: Elapsed time (min): 380.833709247907
 Gif-maker CG2: Elapsed time (min): 88.67235361735025
