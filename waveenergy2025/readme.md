@@ -1,5 +1,9 @@
 # Wave energy device summer 2025
 
+14-08 CG2 on M2 data 11 Tend=4: Elapsed time (min): 125.33164933125178
+14/15-08 CG2 on M2 data 11 Tend=8:
+
+
 08-09-2025 update of file below; fixed an Area error (had made buoy mass to light in effect). CG1 and CG2 still working; 
 
 29-08: gif at CG3 made with python3 wavebuoyhydynVBMGN2DHancopy2808.py native venv
