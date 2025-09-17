@@ -1,4 +1,7 @@
 # Wave energy device summer 2025
+17-09: CG3  1264.7091892838478
+
+#------ User Input ------# data 12: Elapsed time (min): 288.56858534812926 ; data 13 CG2 Elapsed time (min): 311.16105523109434 14 CG1 Elapsed time (min): 84.88363343477249
 
 14-08 CG2 on M2 data 11 Tend=4: Elapsed time (min): 125.33164933125178
 14/15-08 CG2 on M2 data 11 Tend=8:
