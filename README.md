@@ -13,7 +13,7 @@ gam: 4.00, a: 10.00000, b: 0.00125, dt: 0.00250, Linferror: 0.05859, L2error: 0.
 
 gam: 4.00, a: 10.00000, b: 0.00044, dt: 0.00125, Linferror: 0.02725, L2error: 0.02171
 
-1st  0.44min; 2nd 1min; 3rd 1.75min; 4th 4min; 5th 7.34min
+1st  0.44min; 2nd 1min; 3rd 1.75min; 4th 4min; 5th 7.34min; order is about $(\Delta t)^{1.1}$.
 
 <p align="center">
   <img src="acwaveEcollball2026ftaadt7min.png" width="550" alt="Description"/>
