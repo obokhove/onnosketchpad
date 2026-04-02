@@ -1,7 +1,7 @@
 # Onno's sketchpad
 02-04-2025: BB code acwaveEcollballnft2026aa.py
 
-Try $a=10$ but still $b =10{\Delta t}^{3/2}$ for $\lambda = -a e^{-\gamma* /b}$:
+Try $a=10$ but still $b =10{\Delta t}^{3/2}$ for $\lambda = -a e^{-\gamma Z /b}$:
 
 gam: 4.00, a: 10.00000, b: 0.02828, dt: 0.02000, Linferror: 0.55697, L2error: 0.44202
 
