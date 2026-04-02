@@ -15,6 +15,10 @@ gam: 4.00, a: 10.00000, b: 0.00044, dt: 0.00125, Linferror: 0.02725, L2error: 0.
 
 1st  0.44min; 2nd 1min; 3rd 1.75min; 4th 4min; 5th 7.34min
 
+<p align="center">
+  <img src="acwaveEcollball2026ftaadt7min.png" width="600" alt="Description"/>
+</p>
+
 25-08-2025: see wave energy 2025 folder.
  
 
